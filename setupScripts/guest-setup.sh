@@ -2,6 +2,8 @@
 
 set -e
 MYSQL_PWD=qwerty123
+ADMIN_USER=admin
+ADMIN_PWD=admin
 
 echo "Installing base packages"
 apt-get install -y openssl openssh-server curl git htop mcrypt whois sshpass
@@ -10,10 +12,10 @@ apt-get install -y dkms build-essential linux-headers-generic linux-headers-$(un
 restart ssh
 
 echo "Creating admin user"
-sudo useradd admin -d /home/admin -m -p $(mkpasswd admin)
+sudo useradd $ADMIN_USER -d /home/admin -m -p $(mkpasswd $ADMIN_PWD)
 
 echo "Cloning GIT repository"
-git clone https://github.com/mbmihura/utn-virtualizacion
+#git clone https://github.com/mbmihura/utn-virtualizacion
 
 echo "Installing DB Engine"
 debconf-set-selections <<< "mysql-server mysql-server/root_password password $MYSQL_PWD"
