@@ -21,4 +21,6 @@ echo "Installing DB Engine"
 debconf-set-selections <<< "mysql-server mysql-server/root_password password $MYSQL_PWD"
 debconf-set-selections <<< "mysql-server mysql-server/root_password_again password $MYSQL_PWD"
 apt-get install -y mysql-server
-[[ `netstat -tap | grep mysql | wc -l` -lt 1 ]] && echo "DB Installation Failed" || echo "DB Installation succeeded. Root password is: $MYSQL_PWD"
+[[ `netstat -tap | grep mysql | wc -l` -lt 1 ]] && echo "DB Installation Failed" || echo "DB Installation succeeded. Root password is: $MYSQL_PWD" && exit 1
+mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO root@'%' IDENTIFIED BY '$MYSQL_PWD' WITH GRANT OPTION;"
+mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO root@'localhost' IDENTIFIED BY '$MYSQL_PWD' WITH GRANT OPTION; flush privileges;"
