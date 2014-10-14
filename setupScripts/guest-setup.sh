@@ -12,10 +12,8 @@ apt-get install -y dkms build-essential linux-headers-generic linux-headers-$(un
 restart ssh
 
 echo "Creating admin user"
-sudo useradd $ADMIN_USER -d /home/admin -m -p $(mkpasswd $ADMIN_PWD)
-
-echo "Cloning GIT repository"
-#git clone https://github.com/mbmihura/utn-virtualizacion
+useradd $ADMIN_USER -d /home/admin -m -p $(mkpasswd $ADMIN_PWD)
+echo "$ADMIN_USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 echo "Installing DB Engine"
 debconf-set-selections <<< "mysql-server mysql-server/root_password password $MYSQL_PWD"

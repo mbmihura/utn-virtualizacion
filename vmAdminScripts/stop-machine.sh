@@ -2,6 +2,12 @@
 
 source utils.sh
 
+if ! is_numeric $1; then
+  echo "Invalid VM Number $1.";
+  echo "Usage: ./stop-machine <vm-number>";
+fi
+
+
 VM_NUMBER=$1
 VM_NAME=${cfg_vms[(${VM_NUMBER} - 1)]}
 
@@ -19,9 +25,9 @@ echo "Now powering off machine $VM_NAME"
 OTHER_VM=$(if [ $VM_NUMBER -eq 1 ]; then echo 2; else echo 1; fi)
 if is_active_vm $OTHER_VM;
 then
-  fail_over_to $OTHER_VM
+  fail_over_to $OTHER_VM $VM_NUMBER
 else
-  fail_over_to_dr;
+  fail_over_to_dr $VM_NUMBER;
 fi
 
 execute_in_vm_sudo $VM_NUMBER poweroff

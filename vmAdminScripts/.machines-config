@@ -1,6 +1,6 @@
-cfg_vms=(IyV-01 IyV-02)
-cfg_vm_ips=(192.168.11.26 192.168.11.25)
-cfg_dr_ip=192.168.0.0
+cfg_vms=(IyV-01 IyV-02 IyV-dr)
+cfg_vm_ips=(192.168.11.26 192.168.11.25 192.168.11.27)
+cfg_features=(db app)
 cfg_admin_user=admin
 cfg_admin_passwd=admin
-cfg_dr_ip=192.168.0.0
+cfg_disposition_file=machines_disposition.txt
