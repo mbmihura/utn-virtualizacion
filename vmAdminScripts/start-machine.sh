@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source .machines-config
+source utils.sh
 
 if ! is_numeric $1; then
   echo "Invalid VM Number $1."

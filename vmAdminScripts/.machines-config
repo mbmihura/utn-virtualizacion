@@ -1,5 +1,5 @@
 cfg_vms=(IyV-01 IyV-02 IyV-dr)
-cfg_vm_ips=(192.168.11.26 192.168.11.25 192.168.11.27)
+cfg_vm_ips=(iyv01 iyv02 iyvdr)
 cfg_features=(db app)
 cfg_admin_user=admin
 cfg_admin_passwd=admin

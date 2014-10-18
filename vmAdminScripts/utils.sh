@@ -29,7 +29,7 @@ function is_active_vm {
 
 function is_active_dr {
 
-  host_reachable $cfg_dr_ip
+  is_active_vm 3
   return $?
 }
 
@@ -39,7 +39,7 @@ function execute_in_vm {
   local VM_USER=$cfg_admin_user
   local VM_IP=${cfg_vm_ips[($VM_NUMBER - 1)]}
 
-  local CMD="sshpass -p$cfg_admin_passwd ssh -n ${VM_USER}@$VM_IP $SCRIPT"
+  local CMD="ssh -n ${VM_USER}@$VM_IP $SCRIPT"
   echo "Executing $CMD"
   $CMD
 
@@ -74,7 +74,7 @@ function move_db {
 
   execute_in_vm_sudo $DB_FROM "service mysql stop"
   execute_in_vm_sudo $DB_TO "service mysql stop"
-  execute_in_vm_sudo $DB_TO "rm -rf /var/lib/mysql/*; rm -rf share/mysql/*"
+  execute_in_vm_sudo $DB_TO "rm -rf /var/lib/mysql/*; rm -rf share/*"
   execute_in_vm_sudo $DB_FROM "scp -r -i .ssh/id_dsa /var/lib/mysql admin@$IP_TO:share/"
   execute_in_vm_sudo $DB_TO "cp -r share/mysql/. /var/lib/mysql"
   execute_in_vm_sudo $DB_TO "chown -R mysql:mysql /var/lib/mysql"
@@ -83,6 +83,12 @@ function move_db {
 }
 
 function move_app {
+
+  local DB_FROM=$1
+  local DB_TO=$2
+
+  echo 'Stop web app in machine $DB_FROM'
+  #execute_in_vm_sudo $DB_FROM "apagar la app"
 
   return 0
 }
