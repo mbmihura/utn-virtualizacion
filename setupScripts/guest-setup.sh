@@ -33,7 +33,7 @@ apt-get install -y mysql-server
 [[ `netstat -tap | grep mysql | wc -l` -lt 1 ]] && echo "DB Installation Failed" || echo "DB Installation succeeded. Root password is: $MYSQL_PWD" && exit 1
 mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO root@'%' IDENTIFIED BY '$MYSQL_PWD' WITH GRANT OPTION;"
 mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO root@'localhost' IDENTIFIED BY '$MYSQL_PWD' WITH GRANT OPTION; flush privileges;"
-
+echo "You'll have to manually edit my.conf file to allow mysql to accept connections from outside."
 echo "Creating shared folder"
 mkdir /home/$ADMIN_USER/shared
 
@@ -56,4 +56,5 @@ echo "${GUEST_IP_BASE}3 ${HOSTNAME_BASE}dr" >> /etc/hosts
 echo "${GUEST_IP_BASE}1 ${HOSTNAME_BASE}-svc-db" >> /etc/hosts
 echo "${GUEST_IP_BASE}2 ${HOSTNAME_BASE}-svc-app" >> /etc/hosts
 
-echo "Network done. Please manually configure "IP Address, netmask, etc. at /etc/network/interfaces"
+echo "Network done. Please manually configure IP Address, netmask, etc. at /etc/network/interfaces."
+echo "You'll also need to create ssh certificates for each guest to connect to any other guest and for the host to the gustas as well."
