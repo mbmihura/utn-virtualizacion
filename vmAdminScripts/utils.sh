@@ -70,8 +70,8 @@ function execute_in_vm {
   local VM_USER=$cfg_admin_user
   local VM_IP=${cfg_vm_ips[($VM_NUMBER - 1)]}
 
-  local CMD="ssh -n ${VM_USER}@$VM_IP $SCRIPT"
-#  echo "Executing $CMD"
+  local CMD="ssh -n ${VM_USER}@$VM_IP $SCRIPT >> /dev/null"
+  echo "Executing $CMD"
   $CMD >> /dev/null
 
   return $?
@@ -98,6 +98,21 @@ function machine_runs {
 
   cat $DIPOSITION_FILE | grep $MACHINE | grep $FEATURE >> /dev/null
   return $?
+}
+
+function start_feature {
+
+  local VM_NUMBER=$1
+  local FEATURE=$2
+
+  if [[ $FEATURE == "db" ]]; then
+    local SERVICE=mysql;
+  else
+    local SERVICE=apache2;
+  fi
+
+  execute_in_vm_sudo $VM_NUMBER "service $SERVICE start"
+
 }
 
 function machine_should_run {
@@ -141,8 +156,8 @@ function move_app {
   local DB_FROM=$1
   local DB_TO=$2
 
-  echo 'Stop web app in machine $DB_FROM'
-  #execute_in_vm_sudo $DB_FROM "apagar la app"
+  execute_in_vm_sudo $DB_FROM "service apache2 stop"
+  execute_in_vm_sudo $DB_TO "service apache2 start"
 
   return 0
 }
@@ -191,9 +206,9 @@ function add_feature_from_disposition {
 
 function where_is_feature {
 
-    FEATURE=$1
+    local FEATURE=$1
 
-    VM_NUMBER=$(awk "/${FEATURE}/{ print NR; exit }" $cfg_disposition_file)
+    local VM_NUMBER=$(awk "/${FEATURE}/{ print NR; exit }" $cfg_disposition_file)
     return $VM_NUMBER
 
 }
@@ -207,6 +222,21 @@ function set_hosts_resolution {
   for vm_number in 1 2; do
     execute_in_vm_sudo $vm_number "sed -i \"/${cfg_host_svc_prefix}$FEATURE/c\\$FEATURE_TO_IP\t${cfg_host_svc_prefix}$FEATURE\" /etc/hosts"
   done
+}
+
+function set_hosts_resolution_all_features {
+
+  local VM_NUMBER=$1
+
+  for possible_feature in ${cfg_features[@]};
+  do
+    where_is_feature $possible_feature
+    local VM_NUMBER_CURR_FEATURE=$?
+    local VM_IP_CURR_FEATURE=${cfg_vm_ip_numbers[(${VM_NUMBER_CURR_FEATURE} - 1)]}
+
+    execute_in_vm_sudo $VM_NUMBER "sed -i \"/${cfg_host_svc_prefix}$possible_feature/c\\$VM_IP_CURR_FEATURE\t${cfg_host_svc_prefix}$possible_feature\" /etc/hosts"
+  done
+
 }
 
 function move_feature {
@@ -261,5 +291,23 @@ function fail_over_to {
 
 function fail_over_to_dr {
 
-   return 1
+  local VM_FROM=$1
+
+  echo "Starting DR"
+  bash start-machine.sh 3 >> /dev/null
+  echo "Started!"
+
+  move_feature $VM_FROM 3 db;
+  move_feature $VM_FROM 3 app;
+
+  set_hosts_resolution_all_features 3
+
+}
+
+function stop_vm {
+
+  local VM_NUMBER=$1
+
+  execute_in_vm_sudo $VM_NUMBER "poweroff"
+
 }

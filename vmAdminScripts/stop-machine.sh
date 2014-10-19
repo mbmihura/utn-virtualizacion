@@ -28,8 +28,9 @@ then
   echo "Trying to fail-over to $VM_NAME"
   fail_over_to $OTHER_VM $VM_NUMBER
 else
+  echo "Trying to fail-over to DR machine"
   fail_over_to_dr $VM_NUMBER;
 fi
 
-execute_in_vm_sudo $VM_NUMBER poweroff
+stop_vm $VM_NUMBER
 echo "Stopped!"

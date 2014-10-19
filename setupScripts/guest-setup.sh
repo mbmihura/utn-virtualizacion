@@ -19,8 +19,16 @@ fi
 echo "Installing base packages"
 apt-get install -y openssl openssh-server curl git htop mcrypt whois sshpass
 apt-get update
-apt-get install -y dkms build-essential linux-headers-generic linux-headers-$(uname -r)
+apt-get install -y dkms build-essential linux-headers-generic linux-headers-$(uname -r) apache2 libapache2-mod-auth-mysql php5-mysql php5 libapache2-mod-php5 php5-mcrypt
 restart ssh
+
+echo "Installing Wordpress web app"
+sudo service apache2 restart
+apt-get install wordpress
+sudo ln -s /usr/share/wordpress /var/www/html/wordpress
+sudo gzip -d /usr/share/doc/wordpress/examples/setup-mysql.gz
+sudo bash /usr/share/doc/wordpress/examples/setup-mysql -n wordpress localhost
+
 
 echo "Creating admin user"
 useradd $ADMIN_USER -d /home/admin -m -p $(mkpasswd $ADMIN_PWD)
@@ -48,7 +56,7 @@ echo "# gateway 192.168.11.1" >> /etc/network/interfaces
 echo "# dns-nameservers 192.168.11.1" >> /etc/network/interfaces
 echo "# dns-search cpe.telecentro.com" >> /etc/network/interfaces
 #resolvconf -u
-sed '/awk/d' mi_fichero.txt
+
 echo "${GUEST_IP_BASE}1 ${HOSTNAME_BASE}01" >> /etc/hosts
 echo "${GUEST_IP_BASE}2 ${HOSTNAME_BASE}02" >> /etc/hosts
 echo "${GUEST_IP_BASE}3 ${HOSTNAME_BASE}dr" >> /etc/hosts
