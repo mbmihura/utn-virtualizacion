@@ -23,14 +23,16 @@ echo "Now powering off machine $VM_NAME"
 
 # Try to fail over to other VM
 OTHER_VM=$(if [ $VM_NUMBER -eq 1 ]; then echo 2; else echo 1; fi)
+OTHER_VM_NAME=${cfg_vms[(${OTHER_VM} - 1)]}
 if is_active_vm $OTHER_VM;
 then
-  echo "Trying to fail-over to $VM_NAME"
+  echo "Trying to fail-over to $OTHER_VM_NAME"
   fail_over_to $OTHER_VM $VM_NUMBER
 else
+  echo "No more VMs available!"
   echo "Trying to fail-over to DR machine"
   fail_over_to_dr $VM_NUMBER;
 fi
 
 stop_vm $VM_NUMBER
-echo "Stopped!"
+echo "Finished!"

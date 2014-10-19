@@ -13,7 +13,7 @@ VM_NAME=${cfg_vms[(${VM_NUMBER} - 1)]}
 
 
 echo "Will now start VM $VM_NAME"
-
+printf "Powering on ."
 vboxmanage startvm $VM_NAME >> /dev/null
 
 wait_until_running $VM_NUMBER
@@ -21,6 +21,7 @@ if [[ $? -ne 0 ]]; then
   echo "Aborting."
   exit;
 fi
+echo ""
 echo "Started!"
 
 # Start corresponding features
@@ -41,15 +42,16 @@ do
   then
     echo "Trying to fail-back $possible_feature to $VM_NAME."
     bring_in_feature $VM_NUMBER $possible_feature
-    echo "Done."
+    echo "Done.";
   fi
 done
 
 if [[ $VM_NUMBER -ne 3 ]] && is_active_dr; then
   echo "DR is active, stopping now."
   stop_vm 3;
-  echo "Stopped!"
+  echo "Stopped!";
 fi
 
 # Regenerate hosts file
+echo "Updating hosts resolution file.";
 set_hosts_resolution_all_features $VM_NUMBER

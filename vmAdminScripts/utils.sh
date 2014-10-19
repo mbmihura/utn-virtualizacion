@@ -70,8 +70,8 @@ function execute_in_vm {
   local VM_USER=$cfg_admin_user
   local VM_IP=${cfg_vm_ips[($VM_NUMBER - 1)]}
 
-  local CMD="ssh -n ${VM_USER}@$VM_IP $SCRIPT >> /dev/null"
-  echo "Executing $CMD"
+  local CMD="ssh -n ${VM_USER}@$VM_IP $SCRIPT >> /dev/null 2> /dev/null"
+#  echo "Executing $CMD"
   $CMD >> /dev/null
 
   return $?
@@ -100,6 +100,17 @@ function machine_runs {
   return $?
 }
 
+function prepare_db_for_app {
+
+  local APP_TO_PREPARE=$1
+
+  where_is_feature db
+  local VM_WITH_DB=$?
+  local VM_WITH_APP_SUFFIX=${cfg_vm_suffixes[($APP_TO_PREPARE - 1)]}
+  execute_in_vm_sudo $VM_WITH_DB "mysql -u root -pqwerty123 -e \"update wordpress.wp_options set option_value='http://iyv$VM_WITH_APP_SUFFIX/wordpress' where option_name in ('siteurl', 'home')\""
+
+}
+
 function start_feature {
 
   local VM_NUMBER=$1
@@ -109,6 +120,7 @@ function start_feature {
     local SERVICE=mysql;
   else
     local SERVICE=apache2;
+    prepare_db_for_app $VM_NUMBER
   fi
 
   execute_in_vm_sudo $VM_NUMBER "service $SERVICE start"
@@ -151,14 +163,25 @@ function move_db {
 
 }
 
+function where_is_feature {
+
+    local FEATURE=$1
+
+    local VM_NUMBER=$(awk "/${FEATURE}/{ print NR; exit }" $cfg_disposition_file)
+    return $VM_NUMBER
+
+}
+
 function move_app {
 
-  local DB_FROM=$1
-  local DB_TO=$2
+  local APP_FROM=$1
+  local APP_TO=$2
 
-  execute_in_vm_sudo $DB_FROM "service apache2 stop"
-  execute_in_vm_sudo $DB_TO "service apache2 start"
+  execute_in_vm_sudo $APP_FROM "service apache2 stop"
 
+  prepare_db_for_app $APP_TO
+
+  execute_in_vm_sudo $APP_TO "service apache2 start"
   return 0
 }
 
@@ -204,14 +227,7 @@ function add_feature_from_disposition {
 
 }
 
-function where_is_feature {
 
-    local FEATURE=$1
-
-    local VM_NUMBER=$(awk "/${FEATURE}/{ print NR; exit }" $cfg_disposition_file)
-    return $VM_NUMBER
-
-}
 
 function set_hosts_resolution {
 
@@ -297,9 +313,13 @@ function fail_over_to_dr {
   bash start-machine.sh 3 >> /dev/null
   echo "Started!"
 
+  echo "Now moving feature db to DR."
   move_feature $VM_FROM 3 db;
+  echo "Moved!"
+  echo "Now moving feature app to DR."
   move_feature $VM_FROM 3 app;
-
+  echo "Moved!"
+  echo "Updating hosts resolution file."
   set_hosts_resolution_all_features 3
 
 }
