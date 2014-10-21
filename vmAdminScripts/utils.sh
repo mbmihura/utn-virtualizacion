@@ -71,7 +71,7 @@ function execute_in_vm {
   local VM_IP=${cfg_vm_ips[($VM_NUMBER - 1)]}
 
   local CMD="ssh -n -o ConnectTimeout=3 ${VM_USER}@$VM_IP $SCRIPT >> /dev/null 2> /dev/null"
-#  echo "Executing $CMD"
+  echo "Executing $CMD"
   $CMD >> /dev/null
 
   return $?
