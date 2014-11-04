@@ -56,7 +56,11 @@ if ! $TYPE_SELECTED; then TYPE_OPER=true; fi
 
 
 #Begin
+let FECHA=0
+let FECHAANT="20141019 00:00:00"
 while read line; do
 #TODO: Hacer!
-  echo $line
+  FECHA=${line:0:17} 
+  echo $FECHA
+  echo $(( ($(date -ud "$FECHA" +%s) - $(date -ud "$FECHAANT" +%s) ) /60))
 done < $INPUT_FILE
