@@ -56,11 +56,46 @@ if ! $TYPE_SELECTED; then TYPE_OPER=true; fi
 
 
 #Begin
-let FECHA=0
-let FECHAANT="20141019 00:00:00"
+let LINE_NUMBER=0
+let DOWN=false
+let LAST_DATE=0
+let TIME_DOWN=0
+let INTERVAL=0
 while read line; do
 #TODO: Hacer!
-  FECHA=${line:0:17} 
-  echo $FECHA
-  echo $(( ($(date -ud "$FECHA" +%s) - $(date -ud "$FECHAANT" +%s) ) /60))
+  let LINE_NUMBER=$(($LINE_NUMBER + 1))
+  DATE=${line:0:17}
+  if [[ $LINE_NUMBER == 1 ]]; then
+      LAST_DATE=$DATE
+  fi
+
+  if date -d "$DATE" >/dev/null 2>&1;then
+    echo $DATE - $LAST_DATE
+    if [[ $line == *NORESPONSE* ]]; then
+      if [[ $DOWN ]]; then
+        let INTERVAL=$((($(date -ud "$DATE" +%s) - $(date -ud "$LAST_DATE" +%s))/60))
+        let TIME_DOWN=$(($TIME_DOWN + $INTERVAL ))
+        echo $TIME_DOWN
+        if (( $TIME_DOWN > $MIN_WARN )); then
+            if (( $TIMEDOWN < $MIN_CRIT )) ; then
+                echo warning
+            else
+                if (( "$TIMEDOWN" \< "$MIN_FATAL" )); then
+                    echo critical
+                else
+                    echo fatal
+                fi
+            fi
+        fi
+      fi
+      DOWN=true
+      echo DOWN!
+    fi
+    if [[ $line == *OK* ]]; then
+        DOWN=false
+        TIME_DOWN=0
+        echo UP!
+    fi
+    LAST_DATE=$DATE
+  fi
 done < $INPUT_FILE
