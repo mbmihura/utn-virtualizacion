@@ -5,6 +5,7 @@ setsid ./generate-report.sh -i logs/iyvdr.log >/dev/null 2>&1 < /dev/null &
 setsid ./generate-report.sh -i logs/db-iyv.log >/dev/null 2>&1 < /dev/null &
 setsid ./generate-report.sh -i logs/app-iyv.log >/dev/null 2>&1 < /dev/null &
 setsid ./generate-report.sh -i logs/app-iyv.log >/dev/null 2>&1 < /dev/null &
+sleep 2
 DIR=$@   
 cd reports
 dir=$(dir -1)
@@ -13,10 +14,9 @@ do
   if [ -n $file ]; then
     path_and_name=${file%.*}
     exec enscript -p "${path_and_name}".ps  "${path_and_name}".txt >/dev/null 2>&1 < /dev/null &
- 
   fi;
 done;
-sleep 5
+sleep 2
 for file in $dir;
 do
   if [ -n $file ]; then
@@ -24,4 +24,5 @@ do
     exec ps2pdf "${path_and_name}".ps  "${path_and_name}".pdf >/dev/null 2>&1 < /dev/null &
   fi;
 done;
+sleep 2
 rm -R *.ps
