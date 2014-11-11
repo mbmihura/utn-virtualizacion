@@ -1,14 +1,14 @@
 #!/bin/bash
 
 OUTPUT_DIR=reports/
-FILENAME_PREFIX=""
+FILENAME_PREFIX="Reporte_"
 FILENAME_SUFFIX=`date +%Y%m%d-%H%M%S`_
 TYPE_OPER=false
 TYPE_MGMT=false
 TYPE_SELECTED=false
 MIN_WARN=2
 MIN_CRIT=20
-MIN_FATAL=120
+MIN_FATAL=60
 
 
 usage() { printf "Usage: $0\n\t -i <Input> <<Input log file to generate the report with>>\n\t [-d <Output directory>]\n\t [-p <Filename preffix>] <<You may specify a preffix for the generated file/s>>\n\t [-o] <<Operating report>>\n\t [-m] <<Management report>>\n\t [-w <minutes>] <<Minimum minutes to be considered a warning>>\n\t [-c <minutes>] <<Minimum minutes to be considered critical>>\n\t [-f <minutes>] <<Minimum minutes to be considered fatal>>\n" 1>&2; exit 1; }
@@ -61,6 +61,9 @@ let DOWN=false
 let LAST_DATE=0
 let TIME_DOWN=0
 let INTERVAL=0
+let TIME_DOWN_MIN=0
+SERV=${INPUT_FILE%.*}
+SERV=${SERV#*\/}
 while read line; do
 #TODO: Hacer!
   let LINE_NUMBER=$(($LINE_NUMBER + 1))
@@ -68,33 +71,35 @@ while read line; do
   if [[ $LINE_NUMBER == 1 ]]; then
       LAST_DATE=$DATE
   fi
+  if [[ $line == *LOG\ SESSION\ START\ AT* ]]; then
+    let LINE_NUMBER=0
+    let TIME_DOWN=0
+  fi
 
   if date -d "$DATE" >/dev/null 2>&1;then
-    echo $DATE - $LAST_DATE
     if [[ $line == *NORESPONSE* ]]; then
       if [[ $DOWN ]]; then
-        let INTERVAL=$((($(date -ud "$DATE" +%s) - $(date -ud "$LAST_DATE" +%s))/60))
-        let TIME_DOWN=$(($TIME_DOWN + $INTERVAL ))
-        echo $TIME_DOWN
-        if (( $TIME_DOWN > $MIN_WARN )); then
-            if (( $TIMEDOWN < $MIN_CRIT )) ; then
-                echo warning
+        INTERVAL=$(($(date -ud "$DATE" +%s) - $(date -ud "$LAST_DATE" +%s)))
+        TIME_DOWN=$(($TIME_DOWN + $INTERVAL))
+        TIME_DOWN_MIN=$(($TIME_DOWN / 60))
+        if (( "$TIME_DOWN_MIN" > "$MIN_WARN" )); then
+            if (( "$TIME_DOWN_MIN" < "$MIN_CRIT" )); then
+                echo "${DATE} WARNING: ${SERV} ${TIME_DOWN_MIN} minutos sin servicio" >> "${OUTPUT_DIR}${FILENAME_PREFIX}${FILENAME_SUFFIX}${SERV}.txt"
             else
-                if (( "$TIMEDOWN" \< "$MIN_FATAL" )); then
-                    echo critical
+                if (( "$TIME_DOWN_MIN" < "$MIN_FATAL" )); then
+                    echo "${DATE} CRITICAL: ${SERV} ${TIME_DOWN_MIN} minutos sin servicio" >> ./reporte.txt
                 else
-                    echo fatal
+                    echo  "${DATE} FATAL: ${SERV} ${TIME_DOWN_MIN} minutos sin servicio" >> ./reporte.txt
                 fi
             fi
         fi
+      else
+        DOWN=true
       fi
-      DOWN=true
-      echo DOWN!
     fi
     if [[ $line == *OK* ]]; then
         DOWN=false
         TIME_DOWN=0
-        echo UP!
     fi
     LAST_DATE=$DATE
   fi
