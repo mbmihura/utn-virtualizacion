@@ -37,8 +37,8 @@ do
 		   read vm  # create variable to retains the answer
 		   
 		   case "$vm" in
-				1) ./home/nicolas/IyV/utn-virtualizacion/trunk/vmAdminScripts/start-machine.sh 1;;
-				2) ./home/nicolas/IyV/utn-virtualizacion/trunk/vmAdminScripts/start-machine.sh 2;;
+				1) ./start-machine.sh 1 >/dev/null 2>&1 < /dev/null &;;
+				2) ./start-machine.sh 2 >/dev/null 2>&1 < /dev/null &;;
 				3) ;;
 		   esac;;
 		   
@@ -57,8 +57,8 @@ do
 		   read vm  # create variable to retains the answer
 		   
 		   case "$vm" in
-				1) ./home/nicolas/IyV/utn-virtualizacion/trunk/vmAdminScripts/stop-machine.sh 1;;
-				2) ./home/nicolas/IyV/utn-virtualizacion/trunk/vmAdminScripts/stop-machine.sh 2;;
+				1) ./stop-machine.sh 1 >/dev/null 2>&1 < /dev/null &;;
+				2) ./stop-machine.sh 2 >/dev/null 2>&1 < /dev/null &;;
 				3) ;;
 		   esac;;
 		   
@@ -78,11 +78,12 @@ do
 		   read vm  # create variable to retains the answer
 		   
 		   case "$vm" in
-				1) ./home/nicolas/IyV/utn-virtualizacion/trunk/vmAdminScripts/start-machine.sh 1;;
-				2) ./home/nicolas/IyV/utn-virtualizacion/trunk/vmAdminScripts/start-machine.sh 2;;
-				3) ./home/nicolas/IyV/utn-virtualizacion/trunk/vmAdminScripts/start-machine.sh 1
-				   ./home/nicolas/IyV/utn-virtualizacion/trunk/vmAdminScripts/start-machine.sh 2;;				
-				3) ;;
+				1) ./vmAdminScripts/start-machine.sh 1 >/dev/null 2>&1 < /dev/null & ;;
+				2) ./vmAdminScripts/start-machine.sh 2 >/dev/null 2>&1 < /dev/null &;;
+				3) ./vmAdminScripts/start-machine.sh 1 >/dev/null 2>&1 < /dev/null &
+                    sleep 2
+				   ./vmAdminScripts/start-machine.sh 2 >/dev/null 2>&1 < /dev/null &;;				
+				4) ;;
 		   esac;;
 		   
 		4) clear # clear screen for each loop of menu
@@ -99,15 +100,15 @@ do
 		   read vm  # create variable to retains the answer
 		   
 		   case "$vm" in
-				1) ./home/nicolas/IyV/utn-virtualizacion/trunk/vmAdminScripts/start-machine.sh 1;;
-				2) ./home/nicolas/IyV/utn-virtualizacion/trunk/vmAdminScripts/start-machine.sh 2;;
-				3) ./home/nicolas/IyV/utn-virtualizacion/trunk/vmAdminScripts/start-machine.sh 3;;				
+				1) ./stop-machine.sh 1 >/dev/null 2>&1 < /dev/null &
+                    sleep 10
+				   ./stop-machine.sh 2 >/dev/null 2>&1 < /dev/null & ;;
 				3) ;;
 		   esac;;		   
 		 
-		5) ./home/nicolas/IyV/utn-virtualizacion/trunk/vmAdminScripts/start-all-watchdogs.sh;;
+		5) ./start-all-watchdogs.sh >/dev/null 2>&1 < /dev/null & ;;
 		
-		6) ./home/nicolas/IyV/utn-virtualizacion/trunk/vmAdminScripts/launch-all-reports.sh;;
+		6) ./launch-all-reports.sh >/dev/null 2>&1 < /dev/null &;;
 		 
 		q) exit;;
 	esac
